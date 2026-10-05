@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Project_PBL File Manager</title>
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--ink:#16202a;--mute:#5d6b78;--line:#d5dce3;--acc:#0b6e8a;--acc-ink:#fff;--danger:#b3261e;--con:#10171e;--con-ink:#9fe3b4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1419;--panel:#161e26;--ink:#e6edf3;--mute:#8d9ba8;--line:#2a3541;--acc:#4cc3e0;--acc-ink:#06222b;--danger:#ff8a80;--con:#070b0e}}
+:root[data-theme="dark"]{--bg:#0e1419;--panel:#161e26;--ink:#e6edf3;--mute:#8d9ba8;--line:#2a3541;--acc:#4cc3e0;--acc-ink:#06222b;--danger:#ff8a80;--con:#070b0e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:0 0 2px;font-weight:600}
+.sub{color:var(--mute);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+h2{font-size:1rem;margin:0 0 12px;font-weight:600}
+.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+label{display:block;font-size:.85rem;color:var(--mute);margin:10px 0 4px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--acc)}
+button.p{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+button.d{color:var(--danger)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--mute);font-size:.85rem}
+tr.row{cursor:pointer}
+tr.row:hover{background:var(--bg)}
+tr.sel{background:var(--bg);box-shadow:inset 3px 0 0 var(--acc)}
+.act{display:flex;gap:6px}
+.act button{padding:4px 9px;font-size:.85rem}
+.empty{padding:22px 8px;color:var(--mute)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+dl{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;margin:0}
+dt{color:var(--mute)}dd{margin:0;word-break:break-all}
+.con{margin-top:16px;background:var(--con);border-radius:8px;padding:14px 16px}
+.con h2{color:#c5d1db;display:flex;justify-content:space-between;align-items:center}
+.con button{background:transparent;color:#c5d1db;border-color:#3a4652;font-size:.8rem;padding:3px 9px}
+pre{margin:0;color:var(--con-ink);font:13px/1.55 ui-monospace,Consolas,Menlo,monospace;max-height:210px;overflow:auto;white-space:pre-wrap}
+.err{color:var(--danger);font-size:.85rem;min-height:1.2em;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>File Manager</h1>
+  <p class="sub">Front end for <code>Project_PBL</code>: create, read, update, rename and delete file records.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Files</h2>
+      <div class="bar">
+        <input id="q" placeholder="Search by name, type or path" aria-label="Search files" style="flex:1;min-width:160px">
+        <button id="demo" title="Runs the same steps as Main.java">Run Main.java demo</button>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Actions</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+
+    <div>
+      <section class="card">
+        <h2 id="ftitle">Create file</h2>
+        <label for="fn">File name</label><input id="fn" placeholder="Report.pdf">
+        <label for="fp">File path</label><input id="fp" placeholder="C:\Documents">
+        <div class="row2">
+          <div><label for="ft">File type</label>
+            <select id="ft"><option>PDF</option><option>DOCX</option><option>TXT</option><option>PNG</option><option>JAVA</option><option>CSV</option><option>OTHER</option></select></div>
+          <div><label for="fs">Size (bytes)</label><input id="fs" type="number" min="0" placeholder="2500"></div>
+        </div>
+        <div class="err" id="err" role="alert"></div>
+        <div class="btns">
+          <button class="p" id="save">Create file</button>
+          <button id="cancel" hidden>Cancel edit</button>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <h2>File info</h2>
+        <div id="info" class="empty" style="padding:0">Select a file to see its details.</div>
+        <div class="btns" id="infoBtns" hidden>
+          <button id="edit">Edit</button>
+          <button id="rename">Rename</button>
+          <button class="d" id="del">Delete</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="con">
+    <h2>Console output <button id="clr">Clear</button></h2>
+    <pre id="out" aria-live="polite"></pre>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let files=[],sel=null,editing=null,nextId=1;
+const KEY="pbl_files_v1";
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.files){files=d.files;nextId=d.nextId}}catch(e){}
+  if(!files.length){files=[{id:nextId++,fileName:"Report.pdf",filePath:"C:\\Documents",fileType:"PDF",fileSize:2500}]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({files,nextId}))}catch(e){}}
+function log(s){const o=$("out");o.textContent+=s+"\n";o.scrollTop=o.scrollHeight}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const find=id=>files.find(f=>f.id===id);
+
+function render(){
+  const q=$("q").value.trim().toLowerCase();
+  const list=files.filter(f=>!q||[f.fileName,f.fileType,f.filePath].some(v=>v.toLowerCase().includes(q)));
+  $("rows").innerHTML=list.length?list.map(f=>`<tr class="row ${f.id===sel?'sel':''}" data-id="${f.id}">
+    <td>${esc(f.fileName)}</td><td>${esc(f.fileType)}</td><td>${f.fileSize} B</td>
+    <td><div class="act"><button data-a="view" data-id="${f.id}">Open</button><button data-a="edit" data-id="${f.id}">Edit</button><button class="d" data-a="del" data-id="${f.id}">Delete</button></div></td></tr>`).join("")
+    :`<tr><td colspan="4" class="empty">${files.length?"No files match your search.":"No files yet. Create one using the form."}</td></tr>`;
+  const f=find(sel);
+  $("infoBtns").hidden=!f;
+  $("info").className=f?"":"empty";$("info").style.padding="0";
+  $("info").innerHTML=f?`<dl><dt>File Name</dt><dd>${esc(f.fileName)}</dd><dt>File Path</dt><dd>${esc(f.filePath)}</dd><dt>File Type</dt><dd>${esc(f.fileType)}</dd><dt>File Size</dt><dd>${f.fileSize} bytes</dd></dl>`:"Select a file to see its details.";
+}
+
+function displayFileInfo(f){
+  log("File Name: "+f.fileName);log("File Path: "+f.filePath);
+  log("File Type: "+f.fileType);log("File Size: "+f.fileSize+" bytes");
+}
+function view(id){sel=id;render();displayFileInfo(find(id))}
+
+function resetForm(){editing=null;$("fn").value="";$("fp").value="";$("fs").value="";$("ft").selectedIndex=0;
+  $("ftitle").textContent="Create file";$("save").textContent="Create file";$("cancel").hidden=true;$("err").textContent=""}
+function startEdit(id){const f=find(id);if(!f)return;editing=id;sel=id;
+  $("fn").value=f.fileName;$("fp").value=f.filePath;$("fs").value=f.fileSize;
+  if(![...$("ft").options].some(o=>o.value===f.fileType)){$("ft").add(new Option(f.fileType))}
+  $("ft").value=f.fileType;$("ftitle").textContent="Edit file";$("save").textContent="Save changes";$("cancel").hidden=false;
+  $("fn").focus();render()}
+
+function submit(){
+  const n=$("fn").value.trim(),p=$("fp").value.trim(),t=$("ft").value,s=$("fs").value;
+  if(!n||!p){$("err").textContent="Enter a file name and a file path.";return}
+  if(s===""||Number(s)<0||!Number.isFinite(Number(s))){$("err").textContent="Enter a file size of 0 or more bytes.";return}
+  if(files.some(f=>f.fileName===n&&f.filePath===p&&f.id!==editing)){$("err").textContent="A file with this name already exists in that path.";return}
+  const size=Math.floor(Number(s));
+  if(editing){const f=find(editing);f.fileName=n;f.filePath=p;f.fileType=t;f.fileSize=size;log("File updated: "+n)}
+  else{const f={id:nextId++,fileName:n,filePath:p,fileType:t,fileSize:size};files.push(f);sel=f.id;log("File created: "+n)}
+  save();resetForm();render()
+}
+
+function del(id){const f=find(id);if(!f)return;
+  if(!confirm('Delete "'+f.fileName+'"?'))return;
+  files=files.filter(x=>x.id!==id);if(sel===id)sel=null;if(editing===id)resetForm();
+  log("File deleted: "+f.fileName);save();render()}
+
+function rename(id){const f=find(id);if(!f)return;
+  const n=prompt("New file name:",f.fileName);
+  if(n===null)return;const v=n.trim();
+  if(!v){alert("File name can't be empty.");return}
+  f.fileName=v;log("File renamed: "+v);save();render()}
+
+$("rows").addEventListener("click",e=>{
+  const b=e.target.closest("button");const tr=e.target.closest("tr.row");
+  const id=Number((b||tr||{dataset:{}}).dataset.id);if(!id)return;
+  if(b&&b.dataset.a==="edit")startEdit(id);
+  else if(b&&b.dataset.a==="del")del(id);
+  else view(id)});
+$("save").onclick=submit;
+$("cancel").onclick=()=>{resetForm()};
+$("edit").onclick=()=>startEdit(sel);
+$("rename").onclick=()=>rename(sel);
+$("del").onclick=()=>del(sel);
+$("q").oninput=render;
+$("clr").onclick=()=>{$("out").textContent=""};
+["fn","fp","fs"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")submit()}));
+$("demo").onclick=()=>{
+  const f={id:nextId++,fileName:"Report.pdf",filePath:"C:\\Documents",fileType:"PDF",fileSize:2500};
+  files.push(f);sel=f.id;log("File created: "+f.fileName);render();
+  displayFileInfo(f);log("File renamed: "+f.fileName);
+  files=files.filter(x=>x.id!==f.id);sel=null;log("File deleted: "+f.fileName);save();render()};
+
+load();render();log("Ready. Actions you take here print the same messages as Project_PBL.java.");
+</script>
+</body>
+</html>
