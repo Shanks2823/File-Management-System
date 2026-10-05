@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>File Manager · Cosmos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05060f;--glass:rgba(18,20,48,.58);--ink:#eef0ff;--mute:#9aa1cf;--line:rgba(160,170,255,.2);--acc:#7c5cff;--acc2:#36e0ff;--danger:#ff7a90;--ok:#6dffb2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#05060f}}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 20% 10%,#1b1450 0,transparent 55%),radial-gradient(ellipse at 85% 30%,#0c3550 0,transparent 50%),radial-gradient(ellipse at 50% 100%,#3a1048 0,transparent 55%),var(--bg);background-attachment:fixed;color:var(--ink);font:15px/1.5 "Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1150px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.planet{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#b9a8ff,#5a3df0 55%,#1a1060);box-shadow:0 0 30px #7c5cff88;position:relative;flex:none}
+.planet:after{content:"";position:absolute;left:-16px;right:-16px;top:24px;height:12px;border:2px solid #36e0ffaa;border-radius:50%;transform:rotate(-18deg)}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);margin:0;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,#fff,#a9b8ff 60%,#36e0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);margin:0}
+.stats{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.stat{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:8px 14px;backdrop-filter:blur(10px);min-width:92px}
+.stat b{display:block;font-size:1.25rem}
+.stat span{color:var(--mute);font-size:.8rem}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.stats{margin-left:0}}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,10,.45)}
+h2{font-size:1.05rem;margin:0 0 12px;font-weight:700}
+.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:4px 12px;border-radius:99px;font-size:.82rem;background:transparent}
+.chip.on{background:linear-gradient(90deg,var(--acc),#4a7dff);border-color:transparent;color:#fff}
+input,select{font:inherit;color:var(--ink);background:rgba(5,6,20,.55);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%}
+select option{background:#10132e}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc2);outline-offset:1px}
+label{display:block;font-size:.82rem;color:var(--mute);margin:10px 0 4px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:rgba(124,92,255,.12);color:var(--ink);padding:8px 14px;transition:transform .15s,box-shadow .15s,border-color .15s}
+button:hover{border-color:var(--acc2);box-shadow:0 0 16px #36e0ff44;transform:translateY(-1px)}
+button.p{background:linear-gradient(90deg,var(--acc),#3b8cff);border-color:transparent;font-weight:700;color:#fff}
+button.p:hover{box-shadow:0 0 24px #7c5cffaa}
+button.d{color:var(--danger)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.f{position:relative;text-align:left;padding:14px;border-radius:14px;background:rgba(10,12,34,.6);border:1px solid var(--line);cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;overflow:hidden}
+.f:hover{transform:translateY(-3px);border-color:var(--c)}
+.f.sel{border-color:var(--c);box-shadow:0 0 26px -4px var(--c)}
+.f.new{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.orb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:700 .72rem "Space Grotesk";color:#05060f;background:radial-gradient(circle at 30% 28%,#fff9,var(--c) 55%);box-shadow:0 0 18px var(--c);margin-bottom:10px}
+.nm{font-weight:500;word-break:break-all}
+.meta{color:var(--mute);font-size:.8rem}
+.mini{display:flex;gap:6px;margin-top:10px}
+.mini button{padding:3px 9px;font-size:.78rem}
+.empty{padding:26px 8px;color:var(--mute);text-align:center;grid-column:1/-1}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.err{color:var(--danger);font-size:.85rem;min-height:1.2em;margin-top:8px}
+dl{display:grid;grid-template-columns:86px 1fr;gap:6px 10px;margin:0}
+dt{color:var(--mute)}dd{margin:0;word-break:break-all}
+.side{display:flex;flex-direction:column;gap:18px}
+.con{margin-top:18px;background:rgba(2,4,10,.78);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.con h2{display:flex;justify-content:space-between;align-items:center;color:var(--mute)}
+.con button{padding:3px 10px;font-size:.78rem}
+pre{margin:0;color:var(--ok);font:13px/1.6 "JetBrains Mono",ui-monospace,Consolas,monospace;max-height:200px;overflow:auto;white-space:pre-wrap}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:#141844;border:1px solid var(--acc2);padding:10px 18px;border-radius:99px;z-index:9;transition:.3s;pointer-events:none;box-shadow:0 0 24px #36e0ff55}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="wrap">
+  <header>
+    <div class="planet"></div>
+    <div><h1>File Manager</h1><p class="sub">Launch, inspect, rename and retire file records in your own orbit.</p></div>
+    <div class="stats"><div class="stat"><b id="sN">0</b><span>files</span></div><div class="stat"><b id="sS">0 B</b><span>total size</span></div></div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Your files</h2>
+      <div class="bar">
+        <input id="q" placeholder="Search by name, type or path" aria-label="Search files" style="flex:1;min-width:160px">
+        <button id="demo" title="Runs the same steps as Main.java">Run Main.java demo</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="files" id="rows"></div>
+    </section>
+
+    <div class="side">
+      <section class="card">
+        <h2 id="ftitle">Create file</h2>
+        <label for="fn">File name</label><input id="fn" placeholder="Report.pdf">
+        <label for="fp">File path</label><input id="fp" placeholder="C:\Documents">
+        <div class="row2">
+          <div><label for="ft">File type</label>
+            <select id="ft"><option>PDF</option><option>DOCX</option><option>TXT</option><option>PNG</option><option>JAVA</option><option>CSV</option><option>OTHER</option></select></div>
+          <div><label for="fs">Size (bytes)</label><input id="fs" type="number" min="0" placeholder="2500"></div>
+        </div>
+        <div class="err" id="err" role="alert"></div>
+        <div class="btns"><button class="p" id="save">Create file</button><button id="cancel" hidden>Cancel edit</button></div>
+      </section>
+
+      <section class="card">
+        <h2>File info</h2>
+        <div id="info" class="meta">Select a file to see its details.</div>
+        <div class="btns" id="infoBtns" hidden>
+          <button id="edit">Edit</button><button id="rename">Rename</button><button class="d" id="del">Delete</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="con">
+    <h2>Console output <button id="clr">Clear</button></h2>
+    <pre id="out" aria-live="polite"></pre>
+  </section>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let files=[],sel=null,editing=null,nextId=1,filter="ALL",fresh=null;
+const KEY="pbl_files_v1";
+const COL={PDF:"#ff7a90",DOCX:"#5aa8ff",TXT:"#c8d0ff",PNG:"#6dffb2",JAVA:"#ffb45a",CSV:"#36e0ff",OTHER:"#b79bff"};
+const col=t=>COL[t]||COL.OTHER;
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.files){files=d.files;nextId=d.nextId}}catch(e){}
+  if(!files.length){files=[{id:nextId++,fileName:"Report.pdf",filePath:"C:\\Documents",fileType:"PDF",fileSize:2500}]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({files,nextId}))}catch(e){}}
+function log(s){const o=$("out");o.textContent+=s+"\n";o.scrollTop=o.scrollHeight}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),1900)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const find=id=>files.find(f=>f.id===id);
+const fmt=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB";
+
+function render(){
+  const q=$("q").value.trim().toLowerCase();
+  const types=["ALL",...new Set(files.map(f=>f.fileType))];
+  if(!types.includes(filter))filter="ALL";
+  $("chips").innerHTML=types.map(t=>`<button class="chip ${t===filter?'on':''}" data-t="${esc(t)}">${esc(t==="ALL"?"All":t)}</button>`).join("");
+  const list=files.filter(f=>(filter==="ALL"||f.fileType===filter)&&(!q||[f.fileName,f.fileType,f.filePath].some(v=>v.toLowerCase().includes(q))));
+  $("rows").innerHTML=list.length?list.map(f=>`<div class="f ${f.id===sel?'sel':''} ${f.id===fresh?'new':''}" style="--c:${col(f.fileType)}" data-id="${f.id}" tabindex="0">
+    <div class="orb">${esc(f.fileType.slice(0,4))}</div><div class="nm">${esc(f.fileName)}</div><div class="meta">${fmt(f.fileSize)}</div>
+    <div class="mini"><button data-a="edit" data-id="${f.id}">Edit</button><button class="d" data-a="del" data-id="${f.id}">Delete</button></div></div>`).join("")
+    :`<div class="empty">${files.length?"No files match. Try another search or filter.":"No files yet. Create your first one with the form."}</div>`;
+  fresh=null;
+  const f=find(sel);
+  $("infoBtns").hidden=!f;
+  $("info").innerHTML=f?`<dl><dt>File Name</dt><dd>${esc(f.fileName)}</dd><dt>File Path</dt><dd>${esc(f.filePath)}</dd><dt>File Type</dt><dd>${esc(f.fileType)}</dd><dt>File Size</dt><dd>${f.fileSize} bytes</dd></dl>`:"Select a file to see its details.";
+  $("sN").textContent=files.length;$("sS").textContent=fmt(files.reduce((a,x)=>a+x.fileSize,0));
+}
+function displayFileInfo(f){log("File Name: "+f.fileName);log("File Path: "+f.filePath);log("File Type: "+f.fileType);log("File Size: "+f.fileSize+" bytes")}
+function view(id){sel=id;render();displayFileInfo(find(id))}
+function resetForm(){editing=null;$("fn").value="";$("fp").value="";$("fs").value="";$("ft").selectedIndex=0;
+  $("ftitle").textContent="Create file";$("save").textContent="Create file";$("cancel").hidden=true;$("err").textContent=""}
+function startEdit(id){const f=find(id);if(!f)return;editing=id;sel=id;
+  $("fn").value=f.fileName;$("fp").value=f.filePath;$("fs").value=f.fileSize;
+  if(![...$("ft").options].some(o=>o.value===f.fileType))$("ft").add(new Option(f.fileType));
+  $("ft").value=f.fileType;$("ftitle").textContent="Edit file";$("save").textContent="Save changes";$("cancel").hidden=false;
+  $("fn").focus();render()}
+function submit(){
+  const n=$("fn").value.trim(),p=$("fp").value.trim(),t=$("ft").value,s=$("fs").value;
+  if(!n||!p){$("err").textContent="Enter a file name and a file path.";return}
+  if(s===""||Number(s)<0||!Number.isFinite(Number(s))){$("err").textContent="Enter a file size of 0 or more bytes.";return}
+  if(files.some(f=>f.fileName===n&&f.filePath===p&&f.id!==editing)){$("err").textContent="A file with this name already exists in that path.";return}
+  const size=Math.floor(Number(s));
+  if(editing){const f=find(editing);f.fileName=n;f.filePath=p;f.fileType=t;f.fileSize=size;log("File updated: "+n);toast("Saved "+n)}
+  else{const f={id:nextId++,fileName:n,filePath:p,fileType:t,fileSize:size};files.push(f);sel=f.id;fresh=f.id;log("File created: "+n);toast("Created "+n)}
+  save();resetForm();render()}
+function del(id){const f=find(id);if(!f)return;
+  if(!confirm('Delete "'+f.fileName+'"?'))return;
+  files=files.filter(x=>x.id!==id);if(sel===id)sel=null;if(editing===id)resetForm();
+  log("File deleted: "+f.fileName);toast("Deleted "+f.fileName);save();render()}
+function rename(id){const f=find(id);if(!f)return;
+  const n=prompt("New file name:",f.fileName);if(n===null)return;const v=n.trim();
+  if(!v){alert("File name can't be empty.");return}
+  f.fileName=v;log("File renamed: "+v);toast("Renamed to "+v);save();render()}
+
+$("rows").addEventListener("click",e=>{
+  const b=e.target.closest("button");const c=e.target.closest(".f");
+  const id=Number((b||c||{dataset:{}}).dataset.id);if(!id)return;
+  if(b&&b.dataset.a==="edit")startEdit(id);else if(b&&b.dataset.a==="del")del(id);else view(id)});
+$("rows").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("f"))view(Number(e.target.dataset.id))});
+$("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(b){filter=b.dataset.t;render()}});
+$("save").onclick=submit;$("cancel").onclick=resetForm;
+$("edit").onclick=()=>startEdit(sel);$("rename").onclick=()=>rename(sel);$("del").onclick=()=>del(sel);
+$("q").oninput=render;$("clr").onclick=()=>{$("out").textContent=""};
+["fn","fp","fs"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")submit()}));
+$("demo").onclick=()=>{
+  const f={id:nextId++,fileName:"Report.pdf",filePath:"C:\\Documents",fileType:"PDF",fileSize:2500};
+  files.push(f);sel=f.id;fresh=f.id;log("File created: "+f.fileName);render();
+  displayFileInfo(f);log("File renamed: "+f.fileName);
+  files=files.filter(x=>x.id!==f.id);sel=null;log("File deleted: "+f.fileName);save();render();toast("Demo finished. See the console.")};
+
+/* Cosmos: parallax starfield, twinkle, shooting stars */
+(function(){
+  const c=$("sky"),x=c.getContext("2d");let W,H,stars=[],shoots=[],mx=0,my=0;
+  const still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  function size(){const d=devicePixelRatio||1;W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);
+    stars=Array.from({length:Math.min(260,Math.floor(W*H/6500))},()=>({x:Math.random()*W,y:Math.random()*H,z:Math.random()*.9+.1,p:Math.random()*6.28,h:Math.random()<.2?200:Math.random()<.4?270:40}))}
+  addEventListener("resize",size);
+  addEventListener("pointermove",e=>{mx=(e.clientX/W-.5);my=(e.clientY/H-.5)});
+  function frame(t){
+    x.clearRect(0,0,W,H);
+    for(const s of stars){
+      const px=s.x-mx*s.z*40,py=s.y-my*s.z*40,a=.35+.65*Math.abs(Math.sin(t/1200*s.z+s.p));
+      x.beginPath();x.fillStyle=`hsla(${s.h},90%,88%,${a})`;x.arc(px,py,s.z*1.5,0,6.28);x.fill();
+      if(!still)s.y+=s.z*.05,s.y>H&&(s.y=0)}
+    if(!still&&Math.random()<.008&&shoots.length<2)shoots.push({x:Math.random()*W,y:Math.random()*H*.5,l:0});
+    shoots=shoots.filter(s=>{s.l+=14;s.x+=9;s.y+=5;
+      const g=x.createLinearGradient(s.x,s.y,s.x-90,s.y-50);g.addColorStop(0,"rgba(255,255,255,.9)");g.addColorStop(1,"transparent");
+      x.strokeStyle=g;x.lineWidth=1.6;x.beginPath();x.moveTo(s.x,s.y);x.lineTo(s.x-90,s.y-50);x.stroke();return s.l<260});
+    requestAnimationFrame(frame)}
+  size();requestAnimationFrame(frame)})();
+
+load();render();log("Ready. Actions you take here print the same messages as Project_PBL.java.");
+</script>
+</body>
+</html>
